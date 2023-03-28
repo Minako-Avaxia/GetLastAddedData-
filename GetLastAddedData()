@@ -1,0 +1,29 @@
+CREATE OR REPLACE PROCEDURE GetLastAddedData()
+RETURNS STRING
+LANGUAGE JAVASCRIPT
+AS
+$$
+
+var statement1 = `MERGE INTO DW_T_L2_IMBALAN_UNIT_PRI t
+USING DL_T_L1_COMM_IMBALAN_UNIT_PRI_CONFM_VALUE s
+ON t.UPDATE_BY = s.UPDATE_BY
+WHEN MATCHED THEN DELETE 
+WHEN NOT MATCHED AND area_code = area_code AND target_date = target_date THEN
+    INSERT (area_code, target_date, frame_code, unit_price, update_by, unit_price_type, CREATE_AT, record_update_datetime)
+    VALUES (s.area_code, s.target_date, s.FRAME, s.IMBALANCE_CHARGE_UNIT_PRICE, s.update_by, 2, FILE_UPDATE_TIME, s.record_update_datetime)`
+
+var statement2 = `UPDATE DW_T_L2_IMBALAN_UNIT_PRI
+SET AREA_CODE = CASE  
+                   WHEN AREA_CODE = '03' THEN '01'
+                   ELSE '02'
+                END`
+
+var statement3 = `update DW_T_L2_IMBALAN_UNIT_PRI`
+                
+                
+snowflake.execute({sqlText: statement1});
+snowflake.execute({sqlText: statement2});
+
+$$;
+
+CALL GetLastAddedData();
